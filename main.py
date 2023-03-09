@@ -16,7 +16,6 @@ lib.py_entry.argtypes = [
     ndpointer(dtype=ctypes.c_float, flags="C_CONTIGUOUS", shape=(1, 3, 2160, 3840))
 ]
 
-# in_img = Image.open('in.png').convert('RGB')
 in_img = Image.open('in.png').convert('RGB')
 py_input_tensor = (np.float32(in_img))
 # py_input_tensor = py_input_tensor / 255
@@ -28,14 +27,9 @@ py_input_tensor = np.transpose(py_input_tensor, [0, 3, 1, 2])
 # plt.show()
 
 # convert to continuous numpy array
-# py_input_tensor = (np.float32(in_img))
-# py_input_tensor = np.transpose(py_input_tensor, [2, 1, 0])
-# py_input_tensor = np.transpose(py_input_tensor, [2, 1, 0])
-# py_input_tensor = py_input_tensor / 255
 py_input_tensor = np.ascontiguousarray(py_input_tensor)
 
 py_output_tensor = (np.float32(np.zeros(shape=[1, 3, 2160, 3840])))
-# py_output_tensor = (np.float32(np.zeros(shape=[1, 12, 1920, 1080])))
 
 # call c function
 print("py: {}".format(hex(id(py_input_tensor))))
@@ -53,15 +47,6 @@ lib.py_entry(py_input_tensor, py_output_tensor)
 # tmp = np.reshape(x, [b, blocksize, blocksize, c // (blocksize**2), h, w])
 # tmp = np.transpose(tmp, [0, 3, 4, 1, 5, 2])
 # y = np.reshape(tmp, [b, c // (blocksize**2), h * blocksize, w * blocksize])
-
-# out_img = np.squeeze(py_output_tensor)
-# out_img = np.transpose(out_img, (2, 1, 0))
-
-
-# # y = np.squeeze(py_output_tensor)
-# # out_img = np.transpose(y, [2, 1, 0])
-# out_img_clipped = np.clip(out_img, a_min=0, a_max=255)
-# out_img_clipped = np.uint8(out_img_clipped)
 
 out_img = np.squeeze(py_output_tensor)
 out_img = np.transpose(out_img, (1, 2, 0))

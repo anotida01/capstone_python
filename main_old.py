@@ -25,8 +25,6 @@ in_img = Image.open('in.png').convert('RGB')
 # convert to continuous numpy array
 py_input_tensor = (np.float32(in_img))
 py_input_tensor = np.transpose(py_input_tensor, [2, 1, 0])
-# py_input_tensor = py_input_tensor / 255
-
 py_input_tensor = np.ascontiguousarray(np.expand_dims(py_input_tensor, 0))
 
 py_output_tensor = (np.float32(np.zeros(shape=[1, 3, 3840, 2160])))
