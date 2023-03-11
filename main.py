@@ -6,6 +6,7 @@ from PIL import Image
 from sys import argv
 import os
 from utils.psnr import PSNR
+import datetime as dt
 
 DATA_DIR = './data/'
 LR_DIR = DATA_DIR + 'LR/'
@@ -39,6 +40,10 @@ if __name__ == '__main__':
         ndpointer(dtype=ctypes.c_float, flags="C_CONTIGUOUS", shape=OUTPUT_SHAPE)
     ]
 
+    # output log file
+    out_file = open('out.csv', 'w+')
+    out_file.write('image, psnr (dB), runtime (seconds)\n')
+
     # read images
     if (len(argv) != 1):
         print('Attempting to read image: ', argv[1])
@@ -49,7 +54,7 @@ if __name__ == '__main__':
 
     for i, (img_lr, img_hr) in enumerate(images):
 
-        print (img_lr, img_hr)
+        print ('Found: ', img_lr, img_hr)
         in_img = Image.open(img_lr).convert('RGB')
         py_input_tensor = (np.float32(in_img))
         py_input_tensor = np.expand_dims(py_input_tensor, 0)
@@ -60,28 +65,40 @@ if __name__ == '__main__':
 
         py_output_tensor = (np.float32(np.zeros(shape=OUTPUT_SHAPE)))
 
+        # call C function and start timers
+        old_time = dt.datetime.now()
         lib.py_entry(py_input_tensor, py_output_tensor)
+        new_time = dt.datetime.now()
+        runtime =  dt.timedelta.total_seconds(new_time - old_time)
 
         out_img = np.squeeze(py_output_tensor)
         out_img = np.transpose(out_img, (1, 2, 0))
         out_img_clipped = np.clip(out_img, a_min=0, a_max=255)
         out_img_clipped = np.uint8(out_img_clipped.round())
 
-        hr = Image.open(img_hr).convert('RGB')
-
-        psnr = PSNR(hr, out_img_clipped)
-
-        print("PSNR is {}dB".format(psnr))
-
-        out_img_path = os.path.join(SR_DIR, os.path.basename(img_lr))
+        try:
+            hr = Image.open(img_hr).convert('RGB')
+            psnr = PSNR(hr, out_img_clipped)
+            print("PSNR is {}dB".format(psnr))
+        except Exception as e:
+            print(e)
+            psnr = 0
+        
+        # save results to log file
+        img_lr_basename = os.path.basename(img_lr)
+        line = "{}, {}, {}\n".format(img_lr_basename, psnr, runtime)
+        out_file.write(line)
 
         # save image
+        out_img_path = os.path.join(SR_DIR, img_lr_basename)
+
         try:
             print('Saving SR image as {}'.format(out_img_path))
             plt.imsave(out_img_path, out_img_clipped)
         except Exception as e:
             print(e)
     
+    out_file.close()
     exit(0)
 
 
