@@ -6,7 +6,7 @@ from PIL import Image
 from sys import argv
 import os
 from utils.psnr import PSNR
-import datetime as dt
+import time
 
 DATA_DIR = './data/'
 LR_DIR = DATA_DIR + 'LR/'
@@ -66,10 +66,10 @@ if __name__ == '__main__':
         py_output_tensor = (np.float32(np.zeros(shape=OUTPUT_SHAPE)))
 
         # call C function and start timers
-        old_time = dt.datetime.now()
+        old_time = time.process_time()
         lib.py_entry(py_input_tensor, py_output_tensor)
-        new_time = dt.datetime.now()
-        runtime =  dt.timedelta.total_seconds(new_time - old_time)
+        new_time = time.process_time()
+        runtime =  new_time - old_time
 
         out_img = np.squeeze(py_output_tensor)
         out_img = np.transpose(out_img, (1, 2, 0))
@@ -88,6 +88,7 @@ if __name__ == '__main__':
         img_lr_basename = os.path.basename(img_lr)
         line = "{}, {}, {}\n".format(img_lr_basename, psnr, runtime)
         out_file.write(line)
+        out_file.flush()
 
         # save image
         out_img_path = os.path.join(SR_DIR, img_lr_basename)
