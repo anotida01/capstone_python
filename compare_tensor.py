@@ -4,16 +4,16 @@ import numpy as np
 
 
 # grab pytorch tensor
-infile = open('head_Conv_py.pickle', 'rb')
+infile = open('./pickle/head_Conv_py_cpu.pickle', 'rb')
 torch_device = torch.device('cpu')
-py = torch.load(infile).to(torch_device)
+py = torch.load(infile, map_location=torch_device)
 
 py_tensor = torch.Tensor.numpy(py)
 
 
 # grab ONNX tensor
 infile.close()
-infile = open('node__head_Conv.pickle', 'rb')
+infile = open('./pickle/node__head_Conv.pickle', 'rb')
 
 onnx_tensor = pickle.load(infile)
 
