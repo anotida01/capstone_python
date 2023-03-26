@@ -52,6 +52,9 @@ if __name__ == '__main__':
         print('No arguments provided. Searching {} for images'.format(DATA_DIR))
         images = iterate_dir()
 
+    # make output image folder if not present
+    if (not os.path.exists(SR_DIR)): os.makedirs(SR_DIR)
+
     for i, (img_lr, img_hr) in enumerate(images):
 
         print ('Found: ', img_lr, img_hr)
