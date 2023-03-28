@@ -26,6 +26,8 @@ if __name__ == '__main__':
 
     images = iterate_dir()
 
+    psnr_sum = 0
+
     for i, (img_sr_path, img_model_path) in enumerate(images):
 
         img_model = Image.open(img_model_path).convert('RGB')
@@ -39,3 +41,9 @@ if __name__ == '__main__':
         img_name = os.path.basename(img_sr_path)
 
         print("PSNR of {} is {}dB".format(img_name, psnr))
+
+        psnr_sum += psnr;
+
+    avg_psnr = psnr_sum / len(images)
+
+    print("Average PSNR over {} images is {}dB".format(len(images), avg_psnr))
