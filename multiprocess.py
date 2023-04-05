@@ -17,7 +17,7 @@ SR_DIR = DATA_DIR + 'SR/'
 INPUT_SHAPE = (1, 3, 1080, 1920)
 OUTPUT_SHAPE = (1, 3, 2160, 3840)
 
-NUM_WORKERS = os.cpu_count() - 1
+NUM_WORKERS = os.cpu_count()
 
 def iterate_dir():
 
@@ -40,8 +40,17 @@ def mp_print(string):
 
 
 def run_image(img_lr, img_hr):
+
+    img_hr_basename = os.path.basename(img_hr)
+    img_lr_basename = os.path.basename(img_lr)
+    out_img_path = os.path.join(SR_DIR, img_lr_basename)
+    if (not os.path.exists(SR_DIR)): 
+        os.makedirs(SR_DIR)
+    elif (os.path.isfile(out_img_path)):
+        mp_print("Image {} Exists! Skipping SR".format(out_img_path))
+        return
     
-    lib = ctypes.CDLL("./fmen1080_new.so") # shared library
+    lib = ctypes.CDLL("./fmen_x2_div2k_35dB.so") # shared library
 
     # return and arg types
     lib.py_entry.argtypes = [
@@ -54,6 +63,14 @@ def run_image(img_lr, img_hr):
     py_input_tensor = (np.float32(in_img))
     py_input_tensor = np.expand_dims(py_input_tensor, 0)
     py_input_tensor = np.transpose(py_input_tensor, [0, 3, 1, 2])
+
+    #check shape
+    if (in_img.height != INPUT_SHAPE[2]):
+        mp_print("Height of input image is not correct: Height:{}, Expected: {}".format(in_img.height, INPUT_SHAPE[2]))
+        return
+    elif (in_img.width != INPUT_SHAPE[3]):
+        mp_print("Width of input image is not correct: Width:{}, Expected: {}".format(in_img.width, INPUT_SHAPE[3]))
+        return
 
     # convert to continuous numpy array
     py_input_tensor = np.ascontiguousarray(py_input_tensor)
@@ -73,12 +90,6 @@ def run_image(img_lr, img_hr):
     out_img_clipped = np.uint8(out_img_clipped.round())
 
     # save image
-    img_hr_basename = os.path.basename(img_hr)
-    img_lr_basename = os.path.basename(img_lr)
-    out_img_path = os.path.join(SR_DIR, img_lr_basename)
-
-    if (not os.path.exists(SR_DIR)): os.makedirs(SR_DIR)
-
     try:
         mp_print('Saving SR image as {}'.format(out_img_path))
         plt.imsave(out_img_path, out_img_clipped)
@@ -120,6 +131,8 @@ if __name__ == '__main__':
     images = iterate_dir()
 
     workers = list()
+
+    print("Found {} CPUs. MAX_NUM_WORKERS={}".format(os.cpu_count(), NUM_WORKERS))
 
     for i, (img_lr, img_hr) in enumerate(images):
 
