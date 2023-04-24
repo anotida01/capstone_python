@@ -32,7 +32,7 @@ def iterate_dir():
 
 if __name__ == '__main__':
 
-    lib = ctypes.CDLL("./fmen1080_new.so") # shared library
+    lib = ctypes.CDLL("./fmen_x2_div2k_35dB.so") # shared library
 
     # return and arg types
     lib.py_entry.argtypes = [
