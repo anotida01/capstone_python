@@ -14,8 +14,8 @@ LR_DIR = DATA_DIR + 'LR/'
 HR_DIR = DATA_DIR + 'HR/'
 SR_DIR = DATA_DIR + 'SR/'
 
-INPUT_SHAPE = (1, 3, 1080, 1920)
-OUTPUT_SHAPE = (1, 3, 2160, 3840)
+INPUT_SHAPE = (1, 3, 1920, 1080)
+OUTPUT_SHAPE = (1, 3, 3840, 2160)
 
 NUM_WORKERS = os.cpu_count()
 
@@ -62,14 +62,14 @@ def run_image(img_lr, img_hr):
     in_img = Image.open(img_lr).convert('RGB')
     py_input_tensor = (np.float32(in_img))
     py_input_tensor = np.expand_dims(py_input_tensor, 0)
-    py_input_tensor = np.transpose(py_input_tensor, [0, 3, 1, 2])
+    py_input_tensor = np.transpose(py_input_tensor, [0, 3, 2, 1])
 
     #check shape
-    if (in_img.height != INPUT_SHAPE[2]):
-        mp_print("Height of input image is not correct: Height:{}, Expected: {}".format(in_img.height, INPUT_SHAPE[2]))
+    if (in_img.height != INPUT_SHAPE[3]):
+        mp_print("Height of input image is not correct: Height:{}, Expected: {}".format(in_img.height, INPUT_SHAPE[3]))
         return
-    elif (in_img.width != INPUT_SHAPE[3]):
-        mp_print("Width of input image is not correct: Width:{}, Expected: {}".format(in_img.width, INPUT_SHAPE[3]))
+    elif (in_img.width != INPUT_SHAPE[2]):
+        mp_print("Width of input image is not correct: Width:{}, Expected: {}".format(in_img.width, INPUT_SHAPE[2]))
         return
 
     # convert to continuous numpy array
@@ -85,7 +85,7 @@ def run_image(img_lr, img_hr):
     mp_print("C Function Exited. CPU_TIME: {}s".format(runtime))
 
     out_img = np.squeeze(py_output_tensor)
-    out_img = np.transpose(out_img, (1, 2, 0))
+    out_img = np.transpose(out_img, (2, 1, 0))
     out_img_clipped = np.clip(out_img, a_min=0, a_max=255)
     out_img_clipped = np.uint8(out_img_clipped.round())
 

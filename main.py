@@ -13,8 +13,8 @@ LR_DIR = DATA_DIR + 'LR/'
 HR_DIR = DATA_DIR + 'HR/'
 SR_DIR = DATA_DIR + 'SR/'
 
-INPUT_SHAPE = (1, 3, 1080, 1920)
-OUTPUT_SHAPE = (1, 3, 2160, 3840)
+INPUT_SHAPE = (1, 3, 1920, 1080)
+OUTPUT_SHAPE = (1, 3, 3840, 2160)
 
 def iterate_dir():
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         in_img = Image.open(img_lr).convert('RGB')
         py_input_tensor = (np.float32(in_img))
         py_input_tensor = np.expand_dims(py_input_tensor, 0)
-        py_input_tensor = np.transpose(py_input_tensor, [0, 3, 1, 2])
+        py_input_tensor = np.transpose(py_input_tensor, [0, 3, 2, 1])
 
         # convert to continuous numpy array
         py_input_tensor = np.ascontiguousarray(py_input_tensor)
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         runtime =  new_time - old_time
 
         out_img = np.squeeze(py_output_tensor)
-        out_img = np.transpose(out_img, (1, 2, 0))
+        out_img = np.transpose(out_img, (2, 1, 0))
         out_img_clipped = np.clip(out_img, a_min=0, a_max=255)
         out_img_clipped = np.uint8(out_img_clipped.round())
 
@@ -105,43 +105,3 @@ if __name__ == '__main__':
     out_file.close()
     exit(0)
 
-
-
-
-
-
-    # plt.imshow(in_img, interpolation='nearest')
-    # plt.show()
-
-
-
-
-    # call c function
-    # print("py: {}".format(hex(id(py_input_tensor))))
-
-    # print ("py: py_input_tensor[0][0][0][0]", py_input_tensor[0][0][0][0])
-    # print ("py: py_input_tensor[0][1][567][976]", py_input_tensor[0][1][567][976])
-    # print ("py: py_input_tensor[0][2][1234][399]", py_input_tensor[0][2][1234][399])
-
-
-    # # pixel shuffle
-    # x = py_output_tensor
-    # b, c, h, w = x.shape
-    # blocksize=2
-    # tmp = np.reshape(x, [b, blocksize, blocksize, c // (blocksize**2), h, w])
-    # tmp = np.transpose(tmp, [0, 3, 4, 1, 5, 2])
-    # y = np.reshape(tmp, [b, c // (blocksize**2), h * blocksize, w * blocksize])
-
-
-
-    plt.imshow(out_img_clipped, interpolation='nearest')
-    plt.show()
-
-    # save image
-    try:
-        plt.imsave('out_img_plt-imsave.png', out_img_clipped)
-    except Exception as e:
-        print(e)
-
-
-    exit(0)
