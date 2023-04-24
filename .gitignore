@@ -5,3 +5,5 @@
 *.o
 *.png
 *.csv
+*.directory
+*.log
